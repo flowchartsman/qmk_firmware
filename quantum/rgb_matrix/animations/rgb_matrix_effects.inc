@@ -29,6 +29,7 @@
 #include "pixel_rain_anim.h"
 #include "pixel_flow_anim.h"
 #include "pixel_fractal_anim.h"
+#include "pixel_flame_anim.h"
 #include "typing_heatmap_anim.h"
 #include "digital_rain_anim.h"
 #include "solid_reactive_simple_anim.h"
