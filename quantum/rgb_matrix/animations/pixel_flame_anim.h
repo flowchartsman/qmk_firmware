@@ -1,21 +1,27 @@
 // Copyright (C) 2023 @flowchartsman
+// Copyright (C) 2020 @toggledbits
 // SPDX-License-Identifier: GPL-2.0-or-later
-// Adapted from MatrixFireFast by @toggledbits
+// Adapted from MatrixFireFast
 
 #ifdef ENABLE_RGB_MATRIX_PIXEL_FLAME
 RGB_MATRIX_EFFECT(PIXEL_FLAME)
 #    ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
 
-uint8_t pix[MATRIX_ROWS][MATRIX_COLS];
+// Palettes
+#        if defined(PIXEL_FLAME_GREEN)
+const uint32_t colors[] = {0x000000, 0x0C1805, 0x10290b, 0x194711, 0x316527, 0x4A843D, 0x7BC269, 0x387D29, 0x377C28, 0x549369, 0x224451};
+#        elif defined(PIXEL_FLAME_GAS)
+const uint32_t colors[] = {0x000000, 0x2C0000, 0x410200, 0x610300, 0xDB0001, 0xFF2E01, 0xFFA202, 0xF6FD7D, 0xF0F0FD, 0x0909BD, 0x001E64};
+#            const uint32_t colors[] = {0x000000, 0x300000, 0x800000, 0xA00000, 0xC04000, 0xC06000, 0xC08000, 0x807080 };
+// const uint32_t colors[] = {0x000000, 0x100000, 0x300000, 0x600000, 0x800000, 0xA00000, 0xC02000, 0xC04000, 0xC06000, 0xC08000, 0x807080};
+#        endif
 
-const uint32_t colors[] = {0x000000, 0x100000, 0x300000, 0x600000, 0x800000, 0xA00000, 0xC02000, 0xC04000, 0xC06000, 0xC08000, 0x807080};
-
-// TODO: set dynamically from chosen list
-const uint8_t NCOLORS = (sizeof(colors) / sizeof(colors[0]));
+const uint8_t N_COLORS = ARRAY_SIZE(colors);
+// const uint8_t MAX_DECAY = MATRIX_ROWS / N_COLORS with fuzz
 
 /* Flare constants */
 #        define MAX_FLARES 8
-#        define FLARE_ROWS 3
+#        define FLARE_ROWS 1
 #        define FLARE_CHANCE 50
 /* decay rate of flare radiation; 14 is good */
 #        define FLARE_DECAY 14
@@ -40,8 +46,8 @@ void glow(int x, int y, int z) {
                 int     d = (FLARE_DECAY * isqrt((x - j) * (x - j) + (y - i) * (y - i)) + 5) / 10;
                 uint8_t n = 0;
                 if (z > d) n = z - d;
-                if (n > pix[i][j]) { // can only get brighter
-                    pix[i][j] = n;
+                if (n > g_rgb_frame_buffer[i][j]) { // can only get brighter
+                    g_rgb_frame_buffer[i][j] = n;
                 }
             }
         }
@@ -53,7 +59,7 @@ void newflare(void) {
     if (nflare < MAX_FLARES && rand() % FLARE_CHANCE == 0) {
         int x           = rand() % MATRIX_COLS;
         int y           = rand() % FLARE_ROWS;
-        int z           = NCOLORS - 1;
+        int z           = N_COLORS - 1;
         flare[nflare++] = (z << 16) | (y << 8) | (x & 0xff);
         glow(x, y, z);
     }
@@ -66,19 +72,18 @@ void make_fire(void) {
     for (i = MATRIX_ROWS - 1; i > 0; --i) {
         for (j = 0; j < MATRIX_COLS; ++j) {
             uint8_t n = 0;
-            if (pix[i - 1][j] > 0) n = pix[i - 1][j] - 1;
-            pix[i][j] = n;
+            if (g_rgb_frame_buffer[i - 1][j] > 0) n = g_rgb_frame_buffer[i - 1][j] - 1;
+            g_rgb_frame_buffer[i][j] = n;
         }
     }
 
     // Heat the bottom row
     for (j = 0; j < MATRIX_COLS; ++j) {
-        i = pix[0][j];
+        i = g_rgb_frame_buffer[0][j];
         if (i > 0) {
-            pix[0][j] = random() % (NCOLORS - 4) + 2;
+            g_rgb_frame_buffer[0][j] = random8_min_max(N_COLORS - 6, N_COLORS - 2);
         }
     }
-
     // flare
     for (i = 0; i < nflare; ++i) {
         int x = flare[i] & 0xff;
@@ -98,56 +103,30 @@ void make_fire(void) {
     newflare();
 }
 
-// const uint8_t NCOLORS = (sizeof(colors)/sizeof(colorsO[0]));
-// const uint32_t colorsO[] = {
-//   0x000000,
-//   0x001000,
-//   0x003000,
-//   0x006000,
-//   0x008000,
-//   0x00A000,
-//   0x20C000,
-//   0x40C000,
-//   0x60C000,
-//   0x80C000,
-//   0x807080
-// };
-// const uint32_t colorsGS[] = {
-//   0x000000,
-//   0x2C0000,
-//   0x410200,
-//   0x610300,
-//   0xDB0001,
-//   0xFF2E01,
-//   0xFFA202,
-//   0xF6FD7D,
-//   0xF0F0FD,
-//   0x0909BD,
-//   0x001E64
-// };
-
 static bool PIXEL_FLAME(effect_params_t* params) {
-    const uint8_t  drop_ticks = 20;
+    const uint8_t  drop_ticks = 16;
     static uint8_t drop       = 0;
 
     if (params->init) {
-        for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
-            for (uint8_t c = 0; c < MATRIX_COLS; c++) {
-                pix[r][c] = 0;
-            }
-        }
-        drop = 0;
         rgb_matrix_set_color_all(0, 0, 0);
+        memset(g_rgb_frame_buffer, 0, sizeof(g_rgb_frame_buffer));
+        drop = 0;
     }
 
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     if (++drop > drop_ticks) {
         drop = 0;
         make_fire();
-        for (uint8_t i = 0; i < MATRIX_ROWS; ++i) {
-            for (uint8_t j = 0; j < MATRIX_COLS; ++j) {
-                // bit shift
-                rgb_matrix_set_color(g_led_config.matrix_co[MATRIX_ROWS - i][j], (colors[pix[i][j]] >> 16) & 0xFF, (colors[pix[i][j]] >> 8) & 0xFF, (colors[pix[i][j]]) & 0xFF);
+        for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+            for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+                uint8_t leds[LED_HITS_TO_REMEMBER];
+                uint8_t led_count = rgb_matrix_map_row_column_to_led(MATRIX_ROWS - row - 1, col, leds);
+                if (led_count > LED_HITS_TO_REMEMBER) {
+                    led_count = LED_HITS_TO_REMEMBER;
+                }
+                for (uint8_t led_idx = 0; led_idx < led_count; led_idx++) {
+                    rgb_matrix_set_color(leds[led_idx], (colors[g_rgb_frame_buffer[row][col]] >> 16) & 0xFF, (colors[g_rgb_frame_buffer[row][col]] >> 8) & 0xFF, (colors[g_rgb_frame_buffer[row][col]]) & 0xFF);
+                }
             }
         }
     }
