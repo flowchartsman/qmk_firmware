@@ -12,7 +12,8 @@ RGB_MATRIX_EFFECT(PIXEL_FLAME)
 const uint32_t colors[] = {0x000000, 0x0C1805, 0x10290b, 0x194711, 0x316527, 0x4A843D, 0x7BC269, 0x387D29, 0x377C28, 0x549369, 0x224451};
 #        elif defined(PIXEL_FLAME_GAS)
 const uint32_t colors[] = {0x000000, 0x2C0000, 0x410200, 0x610300, 0xDB0001, 0xFF2E01, 0xFFA202, 0xF6FD7D, 0xF0F0FD, 0x0909BD, 0x001E64};
-#            const uint32_t colors[] = {0x000000, 0x300000, 0x800000, 0xA00000, 0xC04000, 0xC06000, 0xC08000, 0x807080 };
+#        else
+const uint32_t colors[] = {0x000000, 0x300000, 0x800000, 0xA00000, 0xC04000, 0xC06000, 0xC08000, 0x807080};
 // const uint32_t colors[] = {0x000000, 0x100000, 0x300000, 0x600000, 0x800000, 0xA00000, 0xC02000, 0xC04000, 0xC06000, 0xC08000, 0x807080};
 #        endif
 
@@ -21,7 +22,7 @@ const uint8_t N_COLORS = ARRAY_SIZE(colors);
 
 /* Flare constants */
 #        define MAX_FLARES 8
-#        define FLARE_ROWS 1
+#        define FLARE_ROWS 3
 #        define FLARE_CHANCE 50
 /* decay rate of flare radiation; 14 is good */
 #        define FLARE_DECAY 14
