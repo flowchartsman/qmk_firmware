@@ -23,6 +23,7 @@
 #include <math.h>
 
 #include <lib/lib8tion/lib8tion.h>
+#include <lib/noise/srnoise8.h>
 
 #ifndef RGB_MATRIX_CENTER
 const led_point_t k_rgb_matrix_center = {112, 32};
