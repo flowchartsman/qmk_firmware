@@ -2,7 +2,7 @@
 RGB_MATRIX_EFFECT(MATH_FIRE)
 #    ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
 #        ifndef RGB_MATRIX_MATH_FIRE_SCALE_NOISE
-#            define RGB_MATRIX_MATH_SCALE_NOISE 255
+#            define RGB_MATRIX_MATH_FIRE_SCALE_NOISE 255
 #        endif
 
 #        include "print.h"
@@ -58,7 +58,7 @@ RGB HeatColor(uint8_t temperature) {
 led_point_t vpos[RGB_MATRIX_LED_COUNT];
 uint8_t     raster_columns = 0;
 uint8_t     raster_rows    = 0;
-uint8_t     scale_noise    = RGB_MATRIX_MATH_SCALE_NOISE;
+uint8_t     scale_noise    = RGB_MATRIX_MATH_FIRE_SCALE_NOISE;
 void        init_raster(void) {
     static bool did_init = false;
     if (did_init) {
@@ -104,18 +104,6 @@ void        init_raster(void) {
     }
 }
 
-uint8_t columns = 0;
-uint8_t rows    = 0;
-void    set_raster_dims(void) {
-    for (uint8_t i = 0; i < ARRAY_SIZE(g_led_config.point); i++) {
-        if (g_led_config.point[i].x > columns) {
-            columns = g_led_config.point[i].x;
-        }
-        if (g_led_config.point[i].y > rows) {
-            rows = g_led_config.point[i].y;
-        }
-    }
-}
 static bool MATH_FIRE(effect_params_t *params) {
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     static uint16_t time = 0;
