@@ -56,14 +56,16 @@ RGB HeatColor(uint8_t temperature) {
 }
 
 led_point_t vpos[RGB_MATRIX_LED_COUNT];
-uint8_t     raster_columns = 0;
-uint8_t     raster_rows    = 0;
-uint8_t     scale_noise    = RGB_MATRIX_MATH_FIRE_SCALE_NOISE;
-void        init_raster(void) {
-    static bool did_init = false;
-    if (did_init) {
+uint8_t     raster_columns  = 0;
+uint8_t     raster_rows     = 0;
+uint8_t     scale_noise     = RGB_MATRIX_MATH_FIRE_SCALE_NOISE;
+bool        did_raster_init = false;
+
+void init_raster(void) {
+    if (did_raster_init) {
         return;
     }
+    did_raster_init = true;
     // Calculate the virtual columns and rows to make the framebuf a rectangular raster.
     uint8_t curcol = 1;
     for (uint8_t i = 1; i < ARRAY_SIZE(g_led_config.point); i++) {
@@ -99,9 +101,6 @@ void        init_raster(void) {
         vpos[i].x = curcol;
         curcol++;
     }
-    if (scale_noise == 255) {
-        scale_noise = raster_rows * 8;
-    }
 }
 
 static bool MATH_FIRE(effect_params_t *params) {
@@ -113,6 +112,9 @@ static bool MATH_FIRE(effect_params_t *params) {
             rgb_matrix_set_color_all(0, 0, 0);
             // set_raster_dims();
             init_raster();
+            if (scale_noise == 255) {
+                scale_noise = raster_rows * 8;
+            }
             // user_hue = rgb_matrix_get_hue();
         }
     }
