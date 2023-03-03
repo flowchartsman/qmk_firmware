@@ -112,6 +112,11 @@ uint32_t     g_rgb_timer;
 #ifdef RGB_MATRIX_FRAMEBUFFER_EFFECTS
 uint8_t g_rgb_frame_buffer[MATRIX_ROWS][MATRIX_COLS] = {{0}};
 #endif // RGB_MATRIX_FRAMEBUFFER_EFFECTS
+/*
+#if defined(RGB_MATRIX_RASTER_EFFECTS)
+uint8_t *raster;
+#endif // defined(RGB_MATRIX_RASTER_EFFECTS)
+*/
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
 last_hit_t g_last_hit_tracker;
 #endif // RGB_MATRIX_KEYREACTIVE_ENABLED
@@ -204,6 +209,9 @@ void rgb_matrix_set_color_all(uint8_t red, uint8_t green, uint8_t blue) {
     rgb_matrix_driver.set_color_all(red, green, blue);
 #endif
 }
+// #if defined(RGB_MATRIX_RASTER_EFFECTS)
+// void rgb_matrix_set_color_xy(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue) {}
+// #endif // defined(RGB_MATRIX_RASTER_EFFECTS)
 
 void process_rgb_matrix(uint8_t row, uint8_t col, bool pressed) {
 #ifndef RGB_MATRIX_SPLIT
@@ -493,6 +501,51 @@ void rgb_matrix_init(void) {
         last_hit_buffer.tick[i] = UINT16_MAX;
     }
 #endif // RGB_MATRIX_KEYREACTIVE_ENABLED
+
+#if defined(RGB_MATRIX_RASTER_EFFECTS)
+    // Calculate the virtual columns and rows to make a rectangular raster.
+    /*
+    uint8_t raster_cols = 0;
+    uint8_t raster_rows = 0;
+    for (uint8_t i = 1; i < ARRAY_SIZE(g_led_config.point); i++) {
+        // Check to see if a new row has started.
+        if (raster_cols > 0 && g_led_config.point[i].x < g_led_config.point[i - 1].x) {
+            raster_cols = 0;
+            raster_rows++;
+        }
+        raster_r++;
+        if (curcol > raster_columns) {
+            raster_columns = curcol;
+        }
+    }
+    raster = calloc((raster_rows) * (raster_columns), sizeof(uint8_t));
+    if (framebuf == NULL) {
+        dprint("calloc failed\n");
+    }
+    // Generate the virtual x/y for all LEDs
+    raster_rows = 0;
+    raster_cols = 1;
+    vpos[0].x   = 0;
+    vpos[0].y   = 0;
+    for (uint8_t i = 1; i < ARRAY_SIZE(g_led_config.point); i++) {
+        led_point_t last    = g_led_config.point[i - 1];
+        led_point_t current = g_led_config.point[i];
+        if (current.x < last.x) {
+            curcol = 0;
+            currow++;
+        }
+        if (curcol > 0) {
+            uint8_t jump = current.x - last.x;
+            if (jump > 224 / raster_columns * 2) {
+                curcol = current.x * raster_columns / 224;
+            }
+        }
+        vpos[i].y = currow;
+        vpos[i].x = curcol;
+        curcol++;
+    }
+    */
+#endif // defined(RGB_MATRIX_RASTER_EFFECTS)
 
     if (!eeconfig_is_enabled()) {
         dprintf("rgb_matrix_init_drivers eeconfig is not enabled.\n");

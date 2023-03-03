@@ -49,6 +49,9 @@ typedef struct PACKED {
 } last_hit_t;
 #endif // RGB_MATRIX_KEYREACTIVE_ENABLED
 
+// #if defined(RGB_MATRIX_RASTER_EFFECTS)
+// #endif //defined(RGB_MATRIX_RASTER_EFFECTS)
+
 typedef enum rgb_task_states { STARTING, RENDERING, FLUSHING, SYNCING } rgb_task_states;
 
 typedef uint8_t led_flags_t;

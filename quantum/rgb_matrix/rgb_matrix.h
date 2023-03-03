@@ -121,6 +121,9 @@ uint8_t rgb_matrix_map_row_column_to_led(uint8_t row, uint8_t column, uint8_t *l
 
 void rgb_matrix_set_color(int index, uint8_t red, uint8_t green, uint8_t blue);
 void rgb_matrix_set_color_all(uint8_t red, uint8_t green, uint8_t blue);
+// #if defined(RGB_MATRIX_RASTER_EFFECTS)
+// void rgb_matrix_set_color_xy(uint8_t x, uint8_t y, uint8_t red, uint8_t green, uint8_t blue);
+// #endif // defined(RGB_MATRIX_RASTER_EFFECTS)
 
 void process_rgb_matrix(uint8_t row, uint8_t col, bool pressed);
 

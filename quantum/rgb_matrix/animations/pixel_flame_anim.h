@@ -1,7 +1,4 @@
 // Copyright (C) 2023 @flowchartsman
-// Copyright (C) 2020 @toggledbits
-// SPDX-License-Identifier: GPL-2.0-or-later
-// Adapted from MatrixFireFast
 
 #include "print.h"
 
